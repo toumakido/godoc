@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	// 標準入力から相対パスを受け取って一覧表示(ディレクトリ想定で)
 	if err := setEnv(); err != nil {
 		log.Fatalf("failed to set env: %s", err.Error())
 	}
