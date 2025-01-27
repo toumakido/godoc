@@ -16,22 +16,46 @@ func main() {
 		log.Fatalf("failed to change home directory: %s", err.Error())
 	}
 
-	var path string
+	var cmd, value string
 	for {
-		n, err := fmt.Scanln(&path)
+		n, err := fmt.Scanln(&cmd, &value)
 		if err != nil {
-			fmt.Printf("failed to scan standard input: %s", err.Error())
+			fmt.Printf("failed to scan standard input: %s\n", err.Error())
 		}
-		if n > 0 {
-			entries, err := os.ReadDir(path)
-			if err != nil {
-				fmt.Printf("failed to read directory: %s", err.Error())
+		if n == 2 {
+			switch cmd {
+			case "ls":
+				if err := ls(value); err != nil {
+					fmt.Printf("failed to ls: %s\n", err.Error())
+				}
+			case "touch":
+				if err := touch(value); err != nil {
+					fmt.Printf("failed to touch: %s\n", err.Error())
+				}
 			}
-			for _, entry := range entries {
-				fmt.Printf("%v\n", entry.Name())
-			}
+
 		}
 	}
+}
+
+func ls(path string) error {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return fmt.Errorf("failed to read directory: %w", err)
+	}
+	for _, entry := range entries {
+		fmt.Printf("%v\n", entry.Name())
+	}
+	return nil
+}
+
+func touch(fileName string) error {
+	_, err := os.Create(fileName)
+	if err != nil {
+		return fmt.Errorf("failed to create file %w", err)
+	}
+	fmt.Printf("file created: %s\n", fileName)
+	return nil
 }
 
 func setEnv() error {
