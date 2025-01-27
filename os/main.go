@@ -32,6 +32,10 @@ func main() {
 				if err := touch(value); err != nil {
 					fmt.Printf("failed to touch: %s\n", err.Error())
 				}
+			case "cat":
+				if err := cat(value); err != nil {
+					fmt.Printf("failed to cat: %s\n", err.Error())
+				}
 			}
 
 		}
@@ -49,12 +53,21 @@ func ls(path string) error {
 	return nil
 }
 
-func touch(fileName string) error {
-	_, err := os.Create(fileName)
+func touch(path string) error {
+	_, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("failed to create file %w", err)
 	}
-	fmt.Printf("file created: %s\n", fileName)
+	fmt.Printf("file created: %s\n", path)
+	return nil
+}
+
+func cat(path string) error {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("failed to read file(%s): %w", path, err)
+	}
+	fmt.Println(string(file))
 	return nil
 }
 
