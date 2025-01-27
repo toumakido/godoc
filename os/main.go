@@ -37,7 +37,8 @@ func main() {
 					fmt.Printf("failed to cat: %s\n", err.Error())
 				}
 			}
-
+		} else {
+			fmt.Println("unknown input")
 		}
 	}
 }
