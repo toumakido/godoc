@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -11,12 +12,22 @@ func main() {
 	if err := setEnv(); err != nil {
 		log.Fatalf("failed to set env: %s", err.Error())
 	}
-	if err := chHomeDir(); err != nil {
+	homeDir, err := chHomeDir()
+	if err != nil {
 		log.Fatalf("failed to change home directory: %s", err.Error())
 	}
-
 	var cmd, value string
 	for {
+		currentDir, err := filepath.Abs(".")
+		if err != nil {
+			log.Fatalf("failed to abs current directory: %s", err.Error())
+		}
+		// 相対パスを入力を受け付ける左側につける
+		path, err := filepath.Rel(homeDir, currentDir)
+		if err != nil {
+			log.Fatalf("failed to calcurate relative path: %s", err.Error())
+		}
+		fmt.Printf("%s:", path)
 		n, err := fmt.Scanln(&cmd, &value)
 		if err != nil {
 			fmt.Printf("failed to scan standard input: %s\n", err.Error())
@@ -35,9 +46,13 @@ func main() {
 				if err := cat(value); err != nil {
 					fmt.Printf("failed to cat: %s\n", err.Error())
 				}
+			case "cd":
+				if err := cd(value); err != nil {
+					fmt.Printf("failed to cd: %s\n", err.Error())
+				}
+			default:
+				fmt.Printf("unknown cmd: %s\n", cmd)
 			}
-		} else {
-			fmt.Println("unknown input")
 		}
 	}
 }
@@ -71,6 +86,10 @@ func cat(path string) error {
 	return nil
 }
 
+func cd(path string) error {
+	return os.Chdir(path)
+}
+
 func setEnv() error {
 	envFile, err := os.ReadFile("os/.env")
 	if err != nil {
@@ -87,13 +106,13 @@ func setEnv() error {
 	return nil
 }
 
-func chHomeDir() error {
+func chHomeDir() (string, error) {
 	homeDir := os.Getenv("HOME_DIR")
 	if homeDir == "" {
 		homeDir = "."
 	}
 	if err := os.Chdir(homeDir); err != nil {
-		return fmt.Errorf("failed to change directory: %w", err)
+		return "", fmt.Errorf("failed to change directory: %w", err)
 	}
-	return nil
+	return filepath.Abs(homeDir)
 }
